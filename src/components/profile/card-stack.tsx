@@ -4,7 +4,6 @@ import move from "lodash-move";
 import Image from "next/image";
 import { useState } from "react";
 
-const CARDS = ["#266678", "#cb7c7a", " #36a18b", "#cda35f", "#747474"];
 const initialTrips = [
   {
     title: "Netherlands",
@@ -98,12 +97,8 @@ const SCALE_FACTOR = 0.05;
 
 // random integer between min and max
 
-function randomInt(min: number, max: number) {
-  return Math.floor(Math.random() * (max - min + 1) + min);
-}
-
 export const CardStack = () => {
-  const [cards, setCards] = useState(CARDS);
+  const [cards, setCards] = useState(TRIPS);
 
   const moveToEnd = (from: number) => {
     setCards(move(cards, from, cards.length - 1));
@@ -112,21 +107,22 @@ export const CardStack = () => {
   return (
     <div className="relative flex items-center justify-center">
       <ul className="relative h-[286px] w-[256px]">
-        {cards.map((color, index) => {
+        {cards.map((url, index) => {
           const canDrag = index === 0;
+          if (index > 7 && index !== cards.length - 1) return;
 
           return (
             <motion.li
-              key={color}
+              key={url}
               className="absolute h-[256px] w-[256px] origin-[top_center] select-none overflow-clip rounded-md shadow-small [list-style:none]"
               style={{
-                top: `${1 * (cards.length - index) * (cards.length - index)}px`,
+                top: `${0.005 * (cards.length - index) ** 4}px`,
                 cursor: "grab",
               }}
               animate={{
                 left: index * -CARD_OFFSET,
                 scale: 1 - index * SCALE_FACTOR,
-                zIndex: CARDS.length - index,
+                zIndex: cards.length - index,
               }}
               drag={canDrag ? "x" : false}
               dragConstraints={{
@@ -139,9 +135,10 @@ export const CardStack = () => {
             >
               <Image
                 draggable={false}
-                src={TRIPS[index + randomInt(0, TRIPS.length)]!}
-                alt="your uploaded photo"
+                src={cards[index]!}
+                alt=""
                 fill
+                priority
               />
             </motion.li>
           );

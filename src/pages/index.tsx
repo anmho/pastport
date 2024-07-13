@@ -6,9 +6,11 @@ import { CameraIcon, GlobeIcon, PeopleIcon } from "~/assets/icons";
 import { StickyScroll } from "~/components/home/stick-scroll";
 import Footer from "~/components/home/footer";
 import Callout from "~/components/home/callout";
-import { ContainerScroll } from "~/components/home/container-scroll";
+import { Header, ScrollCard } from "~/components/home/container-scroll";
 import Link from "next/link";
 import { Avatar, Button, Card } from "@nextui-org/react";
+import { useEffect, useRef, useState } from "react";
+import { useScroll, useTransform } from "framer-motion";
 
 const DATA = [
   {
@@ -31,6 +33,31 @@ const DATA = [
 export default function Home() {
   const { resolvedTheme } = useTheme();
 
+  const containerRef = useRef<any>(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+  });
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => {
+      window.removeEventListener("resize", checkMobile);
+    };
+  }, []);
+
+  const scaleDimensions = () => {
+    return isMobile ? [0.7, 0.9] : [1.05, 1];
+  };
+
+  const rotate = useTransform(scrollYProgress, [0, 1], [20, 0]);
+  const scale = useTransform(scrollYProgress, [0, 1], scaleDimensions());
+  const translate = useTransform(scrollYProgress, [0, 1], [0, -100]);
+
   return (
     <div className="flex h-full w-full flex-col gap-4">
       <div className="flex w-full items-center justify-center p-2">
@@ -52,21 +79,35 @@ export default function Home() {
         </Link>
       </div>
 
-      <div className="relative w-full flex-1 overflow-scroll bg-gradient-to-b from-transparent to-foreground-100">
+      <div
+        className="relative w-full flex-1 overflow-scroll bg-gradient-to-b from-transparent to-foreground-100"
+        ref={containerRef}
+      >
         {/* hero */}
         <div className="flex w-full flex-col">
-          <ContainerScroll
-            titleComponent={
-              <>
-                <h1 className="text-4xl font-semibold text-black dark:text-white">
-                  Your passport to <br />
-                  <span className="mt-1 text-4xl font-bold leading-none md:text-[6rem]">
-                    Memories
-                  </span>
-                </h1>
-              </>
-            }
-          />
+          <div className="relative flex h-[80rem] items-center justify-center p-20">
+            <div
+              className="relative w-full py-40"
+              style={{
+                perspective: "1000px",
+              }}
+            >
+              <Header
+                translate={translate}
+                titleComponent={
+                  <>
+                    <h1 className="text-4xl font-semibold text-black dark:text-white">
+                      Unleash the power of <br />
+                      <span className="mt-1 text-4xl font-bold leading-none md:text-[6rem]">
+                        Scroll Animations
+                      </span>
+                    </h1>
+                  </>
+                }
+              />
+              <ScrollCard rotate={rotate} translate={translate} scale={scale} />
+            </div>
+          </div>
         </div>
 
         <div className="flex w-full items-center justify-center p-4">
